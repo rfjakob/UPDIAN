@@ -48,7 +48,7 @@ serverlist_file = server.json
 secret_key = {secret_key}
 
 # url to your installation (used for hyperlinking in mails)
-updian_url = http://192.168.0.254/updian/
+updian_uri = http://192.168.0.254/updian/
 
 # send infomails: true|false
 mail_active = true
