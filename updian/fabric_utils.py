@@ -48,6 +48,9 @@ def _detect_backend():
         raise RuntimeError('Auto-detection of package manager returned '
                            'ambiguous results. More than one package '
                            'manager found on %s.' % fabric.api.env.host)
+    # No backends found
+    elif len(available_backends) == 0:
+        return None
 
     backend = available_backends[0]
 
