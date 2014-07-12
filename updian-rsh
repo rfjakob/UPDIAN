@@ -1,22 +1,36 @@
 #/bin/bash
+#
+# updian-rsh: Updian Restriced Shell
+#
 
-# Updian Restriced Shell
+# Send message to stdout and syslog
+function msg {
+	echo $1 | logger
+	echo $1
+}
+
+echo "$0: Invoked by process $PPID" | logger
 
 if [[ -z $SSH_ORIGINAL_COMMAND ]]
 then
-	echo "Updian Restriced Shell: Interactive shell not allowed"
+	msg "$0: Interactive shell not allowed"
 	exit 1
 fi
 
 case $SSH_ORIGINAL_COMMAND in
-	"apt-get update -qq" | "apt-get upgrade -s" \
-	| "export DEBIAN_FRONTEND=noninteractive && apt-get upgrade -y --force-yes" \
-	| "apt-get autoclean" | "checkrestart" \
-	| "yum check-update -q" | "yum update -y --skip-broken")
-		bash -c "$SSH_ORIGINAL_COMMAND"
+	  '/bin/bash -c "test -x /usr/bin/yum"' \
+	| '/bin/bash -c "test -x /usr/bin/apt-get"' \
+	| '/bin/bash -c "yum check-update -q"' \
+	| '/bin/bash -c "yum -y update"' \
+	| '/bin/bash -c "DEBIAN_FRONTEND=noninteractive apt-get update -qq"' \
+	| '/bin/bash -c "DEBIAN_FRONTEND=noninteractive apt-get upgrade -s | grep Inst"' \
+	| '/bin/bash -c "PAGER=cat DEBIAN_FRONTEND=noninteractive apt-get --yes -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" upgrade"' \
+	)
+		echo "$0: Executing: $SSH_ORIGINAL_COMMAND" | logger
+		eval $SSH_ORIGINAL_COMMAND
 		;;
 	*)
-		echo "Updian Restriced Shell: Command not allowed: $SSH_ORIGINAL_COMMAND"
+		msg "$0: Command not allowed: $SSH_ORIGINAL_COMMAND"
 		exit 2
 		;;
 esac
